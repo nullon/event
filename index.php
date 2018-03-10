@@ -1,4 +1,6 @@
 <?php
+
+/*MySQL
 $mysql = [
     "host" => "localhost",
     "dbname" => "database",
@@ -15,6 +17,20 @@ catch (Exception $e) {
 }
 $query = 'CREATE TABLE IF NOT EXISTS event (id INT NOT NULL UNIQUE PRIMARY KEY AUTO_INCREMENT,date DATE NOT NULL,event TEXT NOT NULL,status ENUM("visible","hidden") NOT NULL DEFAULT "visible");';
 $PDO->query($query);
+/**/
+
+/*sqlite
+try{
+    $PDO = new PDO("sqlite:my_sqlite_db.db");
+}
+catch (Exception $e) {
+    echo '<h1 style="color:red">データベース接続エラー</h1>'.PHP_EOL;
+    echo "<p>".$e->getMessage()."</p>";
+    exit;
+}
+$query = 'CREATE TABLE IF NOT EXISTS event (id INTEGER NOT NULL UNIQUE PRIMARY KEY AUTOINCREMENT,date DATE NOT NULL,event TEXT NOT NULL,status ENUM NOT NULL DEFAULT "visible");';
+$PDO->query($query);
+/**/
 ?>
 <!DOCTYPE html>
 <html>
