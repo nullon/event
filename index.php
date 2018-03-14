@@ -62,7 +62,7 @@ function display (){
             </tr>
         <?php
         foreach($PDO->query($query) as $value):
-        if($value["status"] == "visible"):
+        if ($value["status"] == "visible"):
         ?>
             <tr>
                 <td><?php echo $value["date"] ?></td>
@@ -71,6 +71,7 @@ function display (){
         <?php
         endif;
         endforeach;
+
         ?>
         </table>
         <form class="row" method="post" action="" enctype="multipart/form-data">
@@ -81,7 +82,7 @@ function display (){
                 <input type="text" name="event" class="form-control" placeholder="できごと" />
             </div>
             <div class="form-group col-sm-2 col-xl-1 text-right">
-                <button type="submit" class="btn btn-info" name="action" value="register">記録</button>
+                <button type="submit" class="btn btn-info" name="action" value="insert">記録</button>
             </div>
         </form>
         
@@ -95,20 +96,20 @@ function insert_record($date,$event){
     $stmt = $PDO->prepare($prepare);
     $stmt->bindParam(":date",$date);
     $stmt->bindParam(":event",$event);
-    if($stmt->execute()){return "レコードを登録しました。";}
+    if ($stmt->execute()){return "レコードを登録しました。";}
     else{return "レコードの登録に失敗しました。";}
 }
 function delete_record($id){
     global $PDO;
     $query = "DELETE FROM event WHERE id = $id";
-    if($PDO->query($query)){return "レコードを消去しました。";}
+    if ($PDO->query($query)){return "レコードを消去しました。";}
     else{return "レコードの削除に失敗しました。";}
 }
 function last_record(){
     global $PDO;
     $query = "SELECT date FROM event ORDER BY id DESC LIMIT 1 ;";
     $return = $PDO->query($query)->fetch()["date"];
-    if($return){return $return;}
+    if ($return){return $return;}
     else{return False;}
 }
 function edit(){
@@ -120,7 +121,7 @@ function edit(){
                 <th>編集</th>
             </tr>
 <?php foreach($PDO->query($query) as $value): ?>           
-            <tr<?php if($value["status"] == "hidden"){echo ' class="table-secondary"';} ?>>
+            <tr<?php if ($value["status"] == "hidden"){echo ' class="table-secondary"';} ?>>
                 <td>
                     <form class="row" method="post" action="" enctype="multipart/form-data">
                         <input type="hidden" value="<?php echo $value["id"] ?>" name="id" />
@@ -133,10 +134,10 @@ function edit(){
                         <div class="form-group col-md-4 col-lg-3 text-right">
                             <button type="submit" class="btn btn-info" name="action" value="update">更新</button>
                             <button type="submit" class="btn btn-danger" name="action" value="delete">削除</button>
-                            <?php if($value["status"] == "visible"): ?>
+                            <?php if ($value["status"] == "visible"): ?>
                                 <button type="submit" class="btn btn-secondary" name="action" value="hidden">非表示</button>
                             <?php endif; ?>
-                            <?php if($value["status"] == "hidden"): ?>
+                            <?php if ($value["status"] == "hidden"): ?>
                                 <button type="submit" class="btn btn-light" name="action" value="visible">再表示</button>
                             <?php endif; ?>
                         </div>
@@ -151,7 +152,7 @@ function edit(){
 function is_record_exists($id){
     global $PDO;
     $query = "SELECT * FROM event WHERE id = $id";
-    if($PDO->query($query)->fetch()){return true;}else{return false;}
+    if ($PDO->query($query)->fetch()){return true;}else{return false;}
 }
 function update_record($id,$date,$event){
     global $PDO;
@@ -160,38 +161,52 @@ function update_record($id,$date,$event){
     $stmt->bindParam(":id",$id);
     $stmt->bindParam(":date",$date);
     $stmt->bindParam(":event",$event);
-    if($stmt->execute()){return "レコードを更新しました。";}
+    if ($stmt->execute()){return "レコードを更新しました。";}
     else{return "レコードの更新に失敗しました。";}
 }
 function switch_status($id,$status){
     global $PDO;
-    if($status == "visible" OR $status == "hidden"){}
+
+    if ($status == "visible" OR $status == "hidden"){}
     else{return "ステータス情報が不正です。";}
+
     $prepare = "UPDATE event SET status = :status WHERE id = :id;";
     $stmt = $PDO->prepare($prepare);
     $stmt->bindParam(":id",$id);
     $stmt->bindParam(":status",$status);
-    if($status == "hidden" && $stmt->execute()){return "レコードを非表示にしました。";}
-    elseif($status == "visible" && $stmt->execute()){return "レコードを表示します。";}
+
+    if ($status == "hidden" && $stmt->execute()){return "レコードを非表示にしました。";}
+    elseif ($status == "visible" && $stmt->execute()){return "レコードを表示します。";}
     else{return "レコードの表示切り替えに失敗しました。";}
 }
 function output_html(){
-    if($_GET["p"] == "edit"){edit();}
+    if ($_GET["p"] == "edit"){edit();}
     else{display();}
 }
 function execution(){
-    if($_POST["action"] == "register"){
-        if($_POST["date"] && $_POST["event"]){echo insert_record($_POST["date"],$_POST["event"]);}
-        else{echo "データが入力されていません。";}
+
+    switch ($_POST["action"]){
+
+        case "insert":
+            if ($_POST["date"] && $_POST["event"]){echo insert_record($_POST["date"],$_POST["event"]);}
+            else{echo "データが入力されていません。";}
+            return;
+
+        case "update":
+            if ($_POST["id"] && $_POST["date"] && $_POST["event"]){echo update_record($_POST["id"],$_POST["date"],$_POST["event"]);}
+            else{echo "入力されたデータに不備があります。";}
+            return;
+
+        case "delete":
+            echo delete_record($_POST["id"]);
+            return;
+
+        case "hidden":
+            echo switch_status($_POST["id"],"hidden");
+            return;
+
+        case "visible":
+            echo switch_status($_POST["id"],"visible");
+            return;
     }
-    //if(!is_numric($_POST["id"])){echo "IDが不正です。";}
-    if($_POST["action"] == "update"){
-        if($_POST["id"] && $_POST["date"] && $_POST["event"]){
-            echo update_record($_POST["id"],$_POST["date"],$_POST["event"]);
-        }
-        else{echo "入力されたデータに不備があります。";}
-    }
-    if($_POST["action"] == "hidden"){echo switch_status($_POST["id"],"hidden");}
-    if($_POST["action"] == "visible"){echo switch_status($_POST["id"],"visible");}
-    if($_POST["action"] == "delete"){echo delete_record($_POST["id"]);}
 }
