@@ -19,6 +19,7 @@ $query = "CREATE TABLE IF NOT EXISTS event (id INT NOT NULL UNIQUE PRIMARY KEY A
 $PDO->query($query);
 /**/
 
+/*SQLite
 try{
     $PDO = new PDO("sqlite:event.db");
 }
